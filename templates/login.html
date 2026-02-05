@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Login — Task Manager</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="light auth-page">
+  <main class="auth-box">
+    <h1>Вход</h1>
+    <form method="post">
+      <input name="username" placeholder="Имя пользователя" required>
+      <input name="password" type="password" placeholder="Пароль" required>
+      <button type="submit">Войти</button>
+    </form>
+    <p>Нет аккаунта? <a href="{{ url_for('register') }}">Зарегистрироваться</a></p>
+  </main>
+</body>
+</html>
