@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Пепешнеле ватафа</title>
+    <link rel="stylesheet" href="static/style.css"> <!-- Подключите ваш CSS файл -->
+</head>
+<body>
+    <!-- Шапка сайта -->
+    <header>
+        <div class="logo">
+            <a href="/"><h1>Пепешнеле ватафа</h1></a>
+        </div>
+        <div class="search-bar">
+            <input type="text" placeholder="Поиск видео...">
+            <button>Найти</button>
+        </div>
+        <div class="user-actions">
+            <a href="/upload">Загрузить</a>
+            <a href="/login">Войти</a>
+            <a href="/register">Регистрация</a>
+        </div>
+    </header>
+
+    <!-- Основной контент -->
+    <main>
+        <section class="featured-videos">
+            <h2>Рекомендуемые</h2>
+            <div class="video-grid">
+                <!-- Пример видео -->
+                <div class="video-item">
+                    <a href="/video/123">
+                        <img src="static/thumbnails/thumb1.jpg" alt="Название видео 1">
+                        <h3>Название видео 1</h3>
+                        <p>Описание видео 1.  Краткое описание, отражающее содержание видеоролика.</p>
+                        <div class="video-info">
+                        </div>
+                    </a>
+                </div>
+
+                <!-- Добавьте больше видео-элементов сюда -->
+                <div class="video-item">
+                    <a href="/video/456">
+                        <img src="static/thumbnails/thumb2.jpg" alt="Название видео 2">
+                        <h3>Название видео 2</h3>
+                        <p>Описание видео 2. Еще одно описание, возможно технического характера.</p>
+                        <div class="video-info">
+                        </div>
+                    </a>
+                </div>
+                <!--И т.д.-->
+            </div>
+        </section>
+
+        <section class="trending-videos">
+            <h2>Популярное сегодня</h2>
+            <div class="video-grid">
+                <!-- Повторите структуру video-item для популярных видео -->
+                 <div class="video-item">
+                    <a href="/video/789">
+                        <img src="static/thumbnails/thumb3.jpg" alt="Название видео 3">
+                        <h3>Название видео 3</h3>
+                        <p>Описание видео 3. Самое популярное видео за сегодня.</p>
+                        <div class="video-info">
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+
+</body>
+</html>
