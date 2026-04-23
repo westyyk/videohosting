@@ -4,10 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Пепешнеле ватафа</title>
-    <link rel="stylesheet" href="static/style.css"> <!-- Подключите ваш CSS файл -->
+    <link rel="stylesheet" href="static/style.css">
 </head>
 <body>
-    <!-- Шапка сайта -->
     <header>
         <div class="logo">
             <a href="/"><h1>Пепешнеле ватафа</h1></a>
@@ -20,15 +19,17 @@
             <a href="/upload">Загрузить</a>
             <a href="/login">Войти</a>
             <a href="/register">Регистрация</a>
+            <a href="{{ url_for('logout') }}">Выйти</a>
+            <a href="/agreement">Пользовательское соглашение</a>
+
         </div>
     </header>
 
-    <!-- Основной контент -->
     <main>
         <section class="featured-videos">
             <h2>Рекомендуемые</h2>
             <div class="video-grid">
-                <!-- Пример видео -->
+
                 <div class="video-item">
                     <a href="/video/123">
                         <img src="static/thumbnails/thumb1.jpg" alt="Название видео 1">
@@ -38,8 +39,6 @@
                         </div>
                     </a>
                 </div>
-
-                <!-- Добавьте больше видео-элементов сюда -->
                 <div class="video-item">
                     <a href="/video/456">
                         <img src="static/thumbnails/thumb2.jpg" alt="Название видео 2">
@@ -49,14 +48,12 @@
                         </div>
                     </a>
                 </div>
-                <!--И т.д.-->
             </div>
         </section>
 
         <section class="trending-videos">
             <h2>Популярное сегодня</h2>
             <div class="video-grid">
-                <!-- Повторите структуру video-item для популярных видео -->
                  <div class="video-item">
                     <a href="/video/789">
                         <img src="static/thumbnails/thumb3.jpg" alt="Название видео 3">
