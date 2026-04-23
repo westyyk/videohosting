@@ -131,6 +131,11 @@ def logout():
 def agreement():
     return render_template("agreement.html")
 
+
+@app.route("/team")
+def team():
+    return render_template("team.html")
+
 @app.route("/sogl")
 def sogl():
     flash("Вы приняли пользовательское соглашение", "info")
