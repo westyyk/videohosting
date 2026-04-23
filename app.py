@@ -19,7 +19,6 @@ def get_db():
 def init_db():
     db = get_db()
     cur = db.cursor()
-    # users, categories, tasks
     cur.executescript(
         """
     CREATE TABLE IF NOT EXISTS users (
@@ -128,40 +127,17 @@ def logout():
     return redirect(url_for("login"))
 
 
-# ---------- Categories ----------
-@app.route("/add_category", methods=["POST"])
-@login_required
-def add_category():
-    name = request.form.get("category_name", "").strip()
-    if not name:
-        flash("Название категории не может быть пустым", "danger")
-        return redirect(url_for("index"))
-    db = get_db()
-    db.execute(
-        "INSERT INTO categories (user_id, name) VALUES (?, ?)", (g.user["id"], name)
-    )
-    db.commit()
-    flash("Категория добавлена", "success")
-    return redirect(url_for("index"))
+@app.route("/agreement")
+def agreement():
+    return render_template("agreement.html")
+
+@app.route("/sogl")
+def sogl():
+    flash("Вы приняли пользовательское соглашение", "info")
+    return render_template("index.html")
 
 
 
-def compute_task_status(task_row):
-    if task_row["completed"]:
-        return "Готово", False
-    dl = task_row["deadline"]
-    if dl:
-        try:
-            dl_date = datetime.strptime(dl, "%Y-%m-%d").date()
-            today = date.today()
-            if dl_date < today:
-                return "Просрочено", True
-            else:
-                return "В процессе", False
-        except Exception:
-            return "В процессе", False
-    else:
-        return "В процессе", False
 
 
 @app.route("/", methods=["GET", "POST"])
@@ -319,6 +295,11 @@ def home_redirect():
     if current_user():
         return redirect(url_for("index"))
     return redirect(url_for("login"))
+
+
+
+
+
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)
