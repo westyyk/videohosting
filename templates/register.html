@@ -4,17 +4,48 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Register — VideoHosting</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
-<body class="light auth-page">
-  <main class="auth-box">
-    <h1>Регистрация</h1>
-    <form method="post">
-      <input name="username" placeholder="Имя пользователя" required>
-      <input name="password" type="password" placeholder="Пароль" required>
-      <button type="submit">Зарегистрироваться</button>
+<body style="margin:0; font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; background: #F5F5F5; color:#223C35;">
+  <main class="auth-box" style="
+      width: 100%;
+      max-width: 420px;
+      background: #ffffff;
+      border-radius: 20px;
+      padding: 2.25rem 2rem;
+      box-shadow: 0 8px 28px rgba(34, 60, 53, 0.25);
+      margin: 6vh auto;
+      border: 1px solid rgba(0,0,0,0.04);
+      position: relative;
+      overflow: hidden;
+  ">
+    <h1 style="margin:0 0 1.25rem; font-weight:700; font-size:1.9rem; color:#223C35; text-align:left;">Регистрация</h1>
+    <form method="post" action="" style="display:grid; gap:.85rem;">
+      <input name="username" placeholder="Имя пользователя" required
+             style="width:100%; padding:.85rem 1rem; border-radius:12px; border:1px solid #e0e0e0; background:#fff; font-size:1rem; color:#333; outline:none;
+                    transition: border-color .2s, box-shadow .2s;">
+      <input name="password" type="password" placeholder="Пароль" required
+             style="width:100%; padding:.85rem 1rem; border-radius:12px; border:1px solid #e0e0e0; background:#fff; font-size:1rem; color:#333; outline:none;
+                    transition: border-color .2s, box-shadow .2s;">
+      <button type="submit" style="
+        align-self: start;
+        padding:.86rem 1.2rem;
+        border-radius:12px;
+        border:none;
+        background:#223C35;
+        color:#fff;
+        font-weight:700;
+        cursor:pointer;
+        transition: transform .05s ease-in-out, background .2s;
+      ">Зарегистрироваться</button>
     </form>
-    <p>Уже есть аккаунт? <a href="{{ url_for('login') }}">Войти</a></p>
+    <p style="margin:0; font-size:.95rem; color:#6b7a77;">
+  Уже есть аккаунт?
+  <a href="{{ url_for('login') }}"
+     style="color:#223C35; text-decoration:none; border-bottom:1px solid rgba(34,60,53,.25);">
+    Войти
+  </a>
+</p>
   </main>
 </body>
 </html>
+
