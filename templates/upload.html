@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <title>Загрузка видео - VimeoTech</title>
+  <style>
+    .upload-area {
+      border: 2px dashed #9e9e9e;
+      border-radius: 12px;
+      padding: 28px;
+      text-align: center;
+      color: #555;
+      background: #fff;
+      transition: border-color .2s ease;
+      cursor: pointer;
+    }
+    .upload-area.dragover {
+      border-color: #3b82f6;
+      color: #374151;
+      background: #f8fbff;
+    }
+    #preview {
+      margin-top: 16px;
+      width: 100%;
+      max-width: 840px;
+      height: auto;
+      display: none;
+    }
+    .row { display:flex; gap:12px; align-items:center; flex-wrap:wrap; }
+    .card { background:#fff; border-radius:8px; padding:16px; border:1px solid #e5e7eb; }
+    .btn {
+      display:inline-block;
+      padding:10px 14px;
+      border-radius:999px;
+      background:#1f2937;
+      color:#fff;
+      text-decoration:none;
+      font-weight:600;
+    }
+    .hidden { display:none; }
+    .progress {
+      width: 100%;
+      height: 8px;
+      background: #eee;
+      border-radius: 6px;
+      overflow: hidden;
+      margin-top: 12px;
+    }
+    .progress > span {
+      display: block;
+      height: 100%;
+      width: 0%;
+      background: #3b82f6;
+      transition: width .2s ease;
+    }
+    label { display:block; margin-top:8px; font-weight:600; }
+    input.title, textarea.desc {
+      width: 100%;
+      padding: 10px;
+      border-radius:6px;
+      border:1px solid #d1d5db;
+      font-family: inherit;
+    }
+    textarea.desc { min-height: 90px; resize: vertical; }
+  </style>
+</head>
+<body style="margin:0; padding:0; background:#F5F5F5; font-family:system-ui;">
+  <!-- Заголовок -->
+  <header style="display:flex; align-items:center; justify-content:space-between; padding:14px 20px; background:#223C35; color:#fff; position:sticky; top:0;">
+    <div style="display:flex; align-items:center; gap:12px;">
+      <a href="/" style="color:#fff; text-decoration:none;">
+        <h1 style="margin:0; font-size:18px;">VimeoTech</h1>
+      </a>
+      <a href="/team" style="color:#fff; text-decoration:none; padding:6px 10px; border:1px solid rgba(255,255,255,.3); border-radius:999px;">Команда</a>
+      <a href="/agreement" style="color:#fff; text-decoration:none; padding:6px 10px; border:1px solid rgba(255,255,255,.3); border-radius:999px;">Соглашение</a>
+    </div>
+    <div style="flex:1; display:flex; justify-content:center;">
+      <input placeholder="Поиск..." style="width:60%; padding:10px 14px; border-radius:999px; border:none;">
+    </div>
+    <div>
+      <!-- здесь можно оставить кнопки пользователя, если нужно -->
+    </div>
+  </header>
+
+  <main style="padding:20px; max-width:1200px; margin:0 auto;">
+    <h2>Загрузка видео</h2>
+
+    <form id="uploadForm" action="/upload" method="post" enctype="multipart/form-data" class="card" style="padding:20px; margin-top:12px;">
+      <div class="row" style="align-items:flex-start;">
+        <!-- Левая колонка: зона загрузки -->
+        <div id="uploadArea" class="upload-area" role="region" aria-label="Зона загрузки видео" style="flex:1 1 60%; min-height:180px;">
+          Перетащите видео сюда или нажмите чтобы выбрать файл
+          <input type="file" id="fileInput" name="video" accept="video/*" style="display:none;" />
+        </div>
+
+        <!-- Правая колонка: превью -->
+        <div style="flex:1 1 35%;">
+          <video id="preview" controls></video>
+        </div>
+      </div>
+
+      <!-- Название и описание -->
+      <div style="margin-top:12px;">
+        <label for="title">Название</label>
+        <input type="text" id="title" name="title" class="title" placeholder="Введите название видео" required>
+
+        <label for="description" style="margin-top:8px;">Описание</label>
+        <textarea id="description" name="description" class="desc" placeholder="Добавьте описание к видео"></textarea>
+      </div>
+
+      <div class="row" style="margin-top:12px; align-items:center;">
+        <button type="button" id="pickBtn" class="btn" style="margin-right:8px;">Выбрать файл</button>
+        <button type="submit" class="btn" style="background:#0a5; margin-left:auto;">Загрузить на сервер</button>
+      </div>
+
+      <div class="progress" id="progressBar" aria-label="Прогресс загрузки">
+        <span></span>
+      </div>
+
+      <div id="status" style="margin-top:8px; color:#555;"></div>
+    </form>
+  </main>
+
+  <script>
+    // Элементы
+    const uploadArea = document.getElementById('uploadArea');
+    const fileInput  = document.getElementById('fileInput');
+    const preview    = document.getElementById('preview');
+    const pickBtn    = document.getElementById('pickBtn');
+    const progressBar = document.getElementById('progressBar');
+    const progressBarInner = progressBar.querySelector('span');
+    const status     = document.getElementById('status');
+    const form       = document.getElementById('uploadForm');
+    const titleInput = document.getElementById('title');
+    const descInput  = document.getElementById('description');
+
+    // Клик по кнопке выбора файла
+    pickBtn.addEventListener('click', () => fileInput.click());
+
+    // Перетащить файл
+    ['dragenter','dragover'].forEach(event =>
+      uploadArea.addEventListener(event, (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        uploadArea.classList.add('dragover');
+      })
+    );
+    ['dragleave','drop'].forEach(event =>
+      uploadArea.addEventListener(event, (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        uploadArea.classList.remove('dragover');
+      })
+    );
+    uploadArea.addEventListener('drop', (e) => {
+      const files = e.dataTransfer.files;
+      if (files && files.length > 0) {
+        handleFile(files[0]);
+      }
+    });
+
+    // Выбор файла через input
+    fileInput.addEventListener('change', () => {
+      if (fileInput.files && fileInput.files.length > 0) {
+        handleFile(fileInput.files[0]);
+      }
+    });
+
+    function handleFile(file) {
+      if (!file.type.startsWith('video/')) {
+        status.textContent = 'Пожалуйста, выберите видеофайл.';
+        return;
+      }
+
+      status.textContent = `Выбран файл: ${file.name} (${(file.size/1024/1024).toFixed(2)} MB)`;
+
+      // Превью
+      const url = URL.createObjectURL(file);
+      preview.src = url;
+      preview.style.display = 'block';
+
+      // Имитируем загрузку
+      simulateUpload(file);
+    }
+
+    function simulateUpload(file) {
+      progressBar.style.display = 'block';
+      progressBarInner.style.width = '0%';
+      let pct = 0;
+      const total = 100;
+      const interval = setInterval(() => {
+        pct += Math.round(Math.random() * 12) + 6;
+        if (pct > total) pct = total;
+        progressBarInner.style.width = pct + '%';
+        if (pct >= total) {
+          clearInterval(interval);
+          status.textContent = 'Загрузка завершена. Видео готово к публикации!';
+        }
+      }, 200);
+    }
+
+    // Пример обработки отправки формы (реальная загрузка на сервер)
+    form.addEventListener('submit', (e) => {
+      // По умолчанию браузер отправит форму. Можно заменить на fetch с FormData.
+      // e.preventDefault();
+      // const fd = new FormData(form);
+      // fetch('/upload', { method: 'POST', body: fd }).then(...);
+    });
+  </script>
+</body>
+</html>
