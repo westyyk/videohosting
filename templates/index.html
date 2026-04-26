@@ -1,72 +1,90 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Пепешнеле ватафа</title>
-    <link rel="stylesheet" href="static/style.css">
+  <meta charset="UTF-8" />
+  <title>VimeoTech</title>
 </head>
-<body>
-    <header>
-        <div class="logo">
-            <a href="/"><h1>Пепешнеле ватафа</h1></a>
+
+<body style="margin:0; padding:0; background:#F5F5F5; font-family:system-ui;">
+
+<header style="display:flex; align-items:center; justify-content:space-between; padding:14px 20px; background:#223C35; color:#fff; position:sticky; top:0;">
+
+  <div style="display:flex; align-items:center; gap:12px;">
+
+    <a href="/" style="color:#fff; text-decoration:none;">
+      <h1 style="margin:0; font-size:18px;">VimeoTech</h1>
+    </a>
+
+    <a href="/team" style="color:#fff; text-decoration:none; padding:6px 10px; border:1px solid rgba(255,255,255,.3); border-radius:999px;">
+      Команда
+    </a>
+
+    <a href="/agreement" style="color:#fff; text-decoration:none; padding:6px 10px; border:1px solid rgba(255,255,255,.3); border-radius:999px;">
+      Соглашение
+    </a>
+
+  </div>
+
+  <div style="flex:1; display:flex; justify-content:center;">
+    <input placeholder="Поиск..."
+      style="width:60%; padding:10px 14px; border-radius:999px; border:none;">
+  </div>
+
+  <div>
+
+    {% if user %}
+      <div style="position:relative; display:inline-block;">
+
+        <button id="userToggle"
+          style="background:rgba(255,255,255,.15); color:#fff; border:1px solid rgba(255,255,255,.35); padding:8px 12px; border-radius:999px; cursor:pointer;">
+
+          {{ user.username }}
+          <span style="margin-left:6px;">▾</span>
+        </button>
+
+        <div id="userDropdown" hidden
+          style="position:absolute; right:0; top:110%; background:#fff; color:#000; border-radius:8px; min-width:160px;">
+
+          <a href="/profile" style="display:block; padding:10px; text-decoration:none; color:#333;">Профиль</a>
+          <a href="/logout" style="display:block; padding:10px; text-decoration:none; color:#333;">Выйти</a>
+
         </div>
-        <div class="search-bar">
-            <input type="text" placeholder="Поиск видео...">
-            <button>Найти</button>
-        </div>
-        <div class="user-actions">
-            <a href="/upload">Загрузить</a>
-            <a href="/login">Войти</a>
-            <a href="/register">Регистрация</a>
-            <a href="{{ url_for('logout') }}">Выйти</a>
-            <a href="/agreement">Пользовательское соглашение</a>
-            <a href="/team">Команда</a>
+      </div>
+
+    {% else %}
+
+      <a href="/login"
+         style="background:#fff; color:#223C35; padding:8px 14px; border-radius:999px; text-decoration:none; font-weight:600;">
+        Войти
+      </a>
+
+    {% endif %}
+
+  </div>
+</header>
 
 
-        </div>
-    </header>
-    <main>
-        <section class="featured-videos">
-            <h2>Рекомендуемые</h2>
-            <div class="video-grid">
-                <div class="video-item">
-                    <a href="/video/123">
-                        <img src="static/thumbnails/thumb1.jpg" alt="Название видео 1">
-                        <h3>Название видео 1</h3>
-                        <p>Описание видео 1.  Краткое описание, отражающее содержание видеоролика.</p>
-                        <div class="video-info">
-                        </div>
-                    </a>
-                </div>
-                <div class="video-item">
-                    <a href="/video/456">
-                        <img src="static/thumbnails/thumb2.jpg" alt="Название видео 2">
-                        <h3>Название видео 2</h3>
-                        <p>Описание видео 2. Еще одно описание, возможно технического характера.</p>
-                        <div class="video-info">
-                        </div>
-                    </a>
-                </div>
-            </div>
-        </section>
+<main style="padding:20px; max-width:1200px; margin:0 auto;">
+  <h2>Главная</h2>
+</main>
 
-        <section class="trending-videos">
-            <h2>Популярное сегодня</h2>
-            <div class="video-grid">
-                 <div class="video-item">
-                    <a href="/video/789">
-                        <img src="static/thumbnails/thumb3.jpg" alt="Название видео 3">
-                        <h3>Название видео 3</h3>
-                        <p>Описание видео 3. Самое популярное видео за сегодня.</p>
-                        <div class="video-info">
-                        </div>
-                    </a>
-                </div>
-            </div>
-        </section>
-    </main>
 
+<script>
+const btn = document.getElementById("userToggle");
+const menu = document.getElementById("userDropdown");
+
+if (btn) {
+  btn.onclick = () => {
+    menu.hidden = !menu.hidden;
+  };
+
+  document.addEventListener("click", (e) => {
+    if (!btn.contains(e.target) && !menu.contains(e.target)) {
+      menu.hidden = true;
+    }
+  });
+}
+</script>
 
 </body>
 </html>
