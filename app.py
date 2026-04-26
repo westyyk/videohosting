@@ -1,12 +1,26 @@
-from flask import Flask, render_template, request, redirect, url_for, session, flash, g
+from flask import Flask, render_template, request, redirect, url_for, session, flash, g, jsonify, send_from_directory
 from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.utils import secure_filename
 import sqlite3
 from datetime import date, datetime
+import os
+import time
 
 DB = "tasks.db"
 app = Flask(__name__)
 app.secret_key = "change_this_secret_in_prod"
 
+# Папка для загрузок
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+UPLOAD_FOLDER = os.path.join(BASE_DIR, 'uploads')
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+app.config['MAX_CONTENT_LENGTH'] = 1024 * 1024 * 1024  # 1 ГБ
+
+ALLOWED_EXTENSIONS = {'mp4', 'mov', 'webm', 'mkv', 'avi'}
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 def get_db():
     db = getattr(g, "_database", None)
@@ -14,7 +28,6 @@ def get_db():
         db = g._database = sqlite3.connect(DB)
         db.row_factory = sqlite3.Row
     return db
-
 
 def init_db():
     db = get_db()
@@ -45,11 +58,7 @@ def init_db():
         FOREIGN KEY(category_id) REFERENCES categories(id)
     );
     """)
-
-
-
     db.commit()
-
 
 def current_user():
     uid = session.get("user_id")
@@ -59,13 +68,12 @@ def current_user():
     cur = db.execute("SELECT id, username FROM users WHERE id = ?", (uid,))
     return cur.fetchone()
 
-
 @app.before_request
 def before_request():
     init_db()
     g.user = current_user()
 
-
+# Ваши существующие роуты (регистрация, вход и т.д.)
 @app.route("/register", methods=["GET", "POST"])
 def register():
     if request.method == "POST":
@@ -92,7 +100,6 @@ def register():
 
     return render_template("register.html")
 
-
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
@@ -114,18 +121,65 @@ def login():
 
     return render_template("login.html")
 
-
 @app.route("/logout")
 def logout():
     session.clear()
     flash("Вы вышли", "info")
     return redirect(url_for("index"))
 
-
 @app.route("/agreement")
 def agreement():
     return render_template("agreement.html")
 
+@app.route("/profile")
+def profile():
+    return render_template("profile.html")
+
+# Новое: загрузка видео
+@app.route("/upload", methods=["GET", "POST"])
+def upload():
+    if request.method == "POST":
+        # файл должен быть в поле 'video'
+        if 'video' not in request.files:
+            return jsonify({'ok': False, 'error': 'Файл не прикреплён'}), 400
+
+        file = request.files['video']
+        if file.filename == '':
+            return jsonify({'ok': False, 'error': 'Файл не выбран'}), 400
+
+        if not allowed_file(file.filename):
+            return jsonify({'ok': False, 'error': 'Неподдерживаемый формат файла'}), 400
+
+        title = request.form.get('title', '')
+        description = request.form.get('description', '')
+
+        filename = secure_filename(file.filename)
+        unique = f"{int(time.time())}_{os.getpid()}"
+        name, ext = os.path.splitext(filename)
+        saved_name = f"{name}-{unique}{ext}"
+        save_path = os.path.join(app.config['UPLOAD_FOLDER'], saved_name)
+
+        file.save(save_path)
+
+        # Здесь можно сохранить метаданные в БД (title, description, путь и т.д.)
+        return jsonify({
+            'ok': True,
+            'file': {
+                'filename': saved_name,
+                'path': f"/uploads/{saved_name}",
+                'size': os.path.getsize(save_path),
+                'title': title,
+                'description': description
+            }
+        })
+
+    # GET: показать страницу загрузки (если используете шаблоны)
+    return render_template("upload.html")
+
+# Статическое обслуживание загруженных файлов
+@app.route('/uploads/<path:filename>')
+def uploaded_file(filename):
+    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
 @app.route("/team")
 def team():
@@ -135,12 +189,10 @@ def team():
 def main():
     return render_template("index.html")
 
-
 @app.route("/sogl")
 def sogl():
     flash("Вы приняли пользовательское соглашение", "info")
     return render_template("index.html")
-
 
 @app.route("/", methods=["GET", "POST"])
 def index():
@@ -194,7 +246,6 @@ def index():
         categories=categories
     )
 
-
 @app.route("/toggle/<int:task_id>")
 def toggle(task_id):
     if not g.user:
@@ -219,7 +270,6 @@ def toggle(task_id):
 
     return redirect(url_for("index"))
 
-
 @app.route("/delete/<int:task_id>", methods=["POST"])
 def delete(task_id):
     if not g.user:
@@ -233,7 +283,6 @@ def delete(task_id):
     db.commit()
 
     return redirect(url_for("index"))
-
 
 @app.route("/edit/<int:task_id>", methods=["GET", "POST"])
 def edit(task_id):
@@ -269,7 +318,6 @@ def edit(task_id):
     ).fetchall()
 
     return render_template("edit.html", task=task, categories=categories)
-
 
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0", port=5000)
