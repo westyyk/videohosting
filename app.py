@@ -18,9 +18,7 @@ def get_db():
 
 def init_db():
     db = get_db()
-    cur = db.cursor()
-    cur.executescript(
-        """
+    db.executescript("""
     CREATE TABLE IF NOT EXISTS users (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         username TEXT UNIQUE NOT NULL,
@@ -40,18 +38,19 @@ def init_db():
         title TEXT NOT NULL,
         description TEXT,
         category_id INTEGER,
-        deadline TEXT, -- stored as YYYY-MM-DD or NULL
+        deadline TEXT,
         completed INTEGER DEFAULT 0,
         created_at TEXT DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY(user_id) REFERENCES users(id),
         FOREIGN KEY(category_id) REFERENCES categories(id)
     );
-    """
-    )
+    """)
+
+
+
     db.commit()
 
 
-# ---------- Auth ----------
 def current_user():
     uid = session.get("user_id")
     if not uid:
@@ -59,18 +58,6 @@ def current_user():
     db = get_db()
     cur = db.execute("SELECT id, username FROM users WHERE id = ?", (uid,))
     return cur.fetchone()
-
-
-def login_required(func):
-    from functools import wraps
-
-    @wraps(func)
-    def wrapper(*args, **kwargs):
-        if not current_user():
-            return redirect(url_for("login", next=request.path))
-        return func(*args, **kwargs)
-
-    return wrapper
 
 
 @app.before_request
@@ -84,9 +71,11 @@ def register():
     if request.method == "POST":
         username = request.form["username"].strip()
         password = request.form["password"]
+
         if not username or not password:
             flash("Введите имя пользователя и пароль", "danger")
             return redirect(url_for("register"))
+
         db = get_db()
         try:
             db.execute(
@@ -97,8 +86,10 @@ def register():
         except sqlite3.IntegrityError:
             flash("Имя пользователя уже занято", "danger")
             return redirect(url_for("register"))
-        flash("Регистрация прошла успешно. Войдите.", "success")
+
+        flash("Регистрация прошла успешно", "success")
         return redirect(url_for("login"))
+
     return render_template("register.html")
 
 
@@ -107,16 +98,20 @@ def login():
     if request.method == "POST":
         username = request.form["username"].strip()
         password = request.form["password"]
+
         db = get_db()
-        cur = db.execute("SELECT * FROM users WHERE username = ?", (username,))
-        user = cur.fetchone()
+        user = db.execute(
+            "SELECT * FROM users WHERE username = ?", (username,)
+        ).fetchone()
+
         if user and check_password_hash(user["password_hash"], password):
             session["user_id"] = user["id"]
-            flash("Вы вошли в систему", "success")
-            nxt = request.args.get("next") or url_for("index")
-            return redirect(nxt)
+            flash("Вы вошли", "success")
+            return redirect(url_for("index"))
+
         flash("Неверные данные", "danger")
         return redirect(url_for("login"))
+
     return render_template("login.html")
 
 
@@ -124,7 +119,7 @@ def login():
 def logout():
     session.clear()
     flash("Вы вышли", "info")
-    return redirect(url_for("login"))
+    return redirect(url_for("index"))
 
 
 @app.route("/agreement")
@@ -136,175 +131,145 @@ def agreement():
 def team():
     return render_template("team.html")
 
+@app.route("/main")
+def main():
+    return render_template("index.html")
+
+
 @app.route("/sogl")
 def sogl():
     flash("Вы приняли пользовательское соглашение", "info")
     return render_template("index.html")
 
 
-
-
-
 @app.route("/", methods=["GET", "POST"])
-@login_required
 def index():
     db = get_db()
+    user = g.user
 
-    # Creating a task via form on same page
+    if not user:
+        return render_template(
+            "index.html",
+            user=None,
+            tasks=[],
+            categories=[]
+        )
+
     if request.method == "POST" and request.form.get("form_type") == "create_task":
         title = request.form.get("title", "").strip()
         description = request.form.get("description", "").strip()
         category_id = request.form.get("category_id") or None
         deadline = request.form.get("deadline") or None
+
         if not title:
             flash("Заголовок задачи обязателен", "danger")
             return redirect(url_for("index"))
-        db.execute(
-            "INSERT INTO tasks (user_id, title, description, category_id, deadline) VALUES (?, ?, ?, ?, ?)",
-            (g.user["id"], title, description, category_id, deadline),
-        )
+
+        db.execute("""
+            INSERT INTO tasks (user_id, title, description, category_id, deadline)
+            VALUES (?, ?, ?, ?, ?)
+        """, (user["id"], title, description, category_id, deadline))
+
         db.commit()
         flash("Задача создана", "success")
         return redirect(url_for("index"))
 
-    # Filters, search and sort
-    q = request.args.get("q", "").strip()
-    cat = request.args.get("category")
-    sort = request.args.get("sort", "deadline")  # 'deadline' or 'created'
-    params = [g.user["id"]]
-    where = "WHERE t.user_id = ?"
-    if q:
-        where += " AND t.title LIKE ?"
-        params.append(f"%{q}%")
-    if cat and cat != "all":
-        where += " AND t.category_id = ?"
-        params.append(cat)
+    tasks = db.execute("""
+        SELECT t.*, c.name AS category_name
+        FROM tasks t
+        LEFT JOIN categories c ON t.category_id = c.id
+        WHERE t.user_id = ?
+        ORDER BY t.created_at DESC
+    """, (user["id"],)).fetchall()
 
-    order = "ORDER BY "
-    if sort == "created":
-        order += "t.created_at DESC"
-    else:
-        # put tasks without deadline at end, otherwise by deadline asc
-        order += "CASE WHEN t.deadline IS NULL THEN 1 ELSE 0 END, t.deadline ASC"
+    categories = db.execute("""
+        SELECT id, name FROM categories
+        WHERE user_id = ?
+    """, (user["id"],)).fetchall()
 
-    query = f"""
-    SELECT t.*, c.name AS category_name
-    FROM tasks t
-    LEFT JOIN categories c ON t.category_id = c.id
-    {where}
-    {order}
-    """
-    cur = db.execute(query, params)
-    rows = cur.fetchall()
-
-    tasks = []
-    for r in rows:
-        status, overdue = compute_task_status(r)
-        tasks.append(
-            {
-                "id": r["id"],
-                "title": r["title"],
-                "description": r["description"],
-                "category_id": r["category_id"],
-                "category_name": r["category_name"],
-                "deadline": r["deadline"],
-                "completed": bool(r["completed"]),
-                "status": status,
-                "overdue": overdue,
-                "created_at": r["created_at"],
-            }
-        )
-
-    categories_cur = db.execute(
-        "SELECT id, name FROM categories WHERE user_id = ? ORDER BY name", (g.user["id"],)
-    )
-    categories = categories_cur.fetchall()
     return render_template(
         "index.html",
+        user=user,
         tasks=tasks,
-        categories=categories,
-        q=q,
-        selected_category=cat or "all",
-        sort=sort,
-        user=g.user,
+        categories=categories
     )
 
 
 @app.route("/toggle/<int:task_id>")
-@login_required
 def toggle(task_id):
-    db = get_db()
-    cur = db.execute(
-        "SELECT completed FROM tasks WHERE id = ? AND user_id = ?", (task_id, g.user["id"])
-    )
-    row = cur.fetchone()
-    if not row:
-        flash("Задача не найдена", "danger")
-        return redirect(url_for("index"))
-    new = 0 if row["completed"] else 1
-    db.execute(
+    if not g.user:
+        return redirect(url_for("login"))
 
-"UPDATE tasks SET completed = ? WHERE id = ? AND user_id = ?", (new, task_id, g.user["id"])
+    db = get_db()
+    row = db.execute(
+        "SELECT completed FROM tasks WHERE id = ? AND user_id = ?",
+        (task_id, g.user["id"])
+    ).fetchone()
+
+    if not row:
+        return redirect(url_for("index"))
+
+    new = 0 if row["completed"] else 1
+
+    db.execute(
+        "UPDATE tasks SET completed = ? WHERE id = ? AND user_id = ?",
+        (new, task_id, g.user["id"])
     )
     db.commit()
-    flash("Статус изменён", "success")
+
     return redirect(url_for("index"))
 
 
 @app.route("/delete/<int:task_id>", methods=["POST"])
-@login_required
 def delete(task_id):
+    if not g.user:
+        return redirect(url_for("login"))
+
     db = get_db()
-    db.execute("DELETE FROM tasks WHERE id = ? AND user_id = ?", (task_id, g.user["id"]))
+    db.execute(
+        "DELETE FROM tasks WHERE id = ? AND user_id = ?",
+        (task_id, g.user["id"])
+    )
     db.commit()
-    flash("Задача удалена", "info")
+
     return redirect(url_for("index"))
 
 
 @app.route("/edit/<int:task_id>", methods=["GET", "POST"])
-@login_required
 def edit(task_id):
+    if not g.user:
+        return redirect(url_for("login"))
+
     db = get_db()
+
     if request.method == "POST":
         title = request.form.get("title", "").strip()
         description = request.form.get("description", "").strip()
         category_id = request.form.get("category_id") or None
         deadline = request.form.get("deadline") or None
         completed = 1 if request.form.get("completed") == "on" else 0
-        if not title:
-            flash("Заголовок обязателен", "danger")
-            return redirect(url_for("edit", task_id=task_id))
-        db.execute(
-            "UPDATE tasks SET title=?, description=?, category_id=?, deadline=?, completed=? WHERE id=? AND user_id=?",
-            (title, description, category_id, deadline, completed, task_id, g.user["id"]),
-        )
+
+        db.execute("""
+            UPDATE tasks
+            SET title=?, description=?, category_id=?, deadline=?, completed=?
+            WHERE id=? AND user_id=?
+        """, (title, description, category_id, deadline, completed, task_id, g.user["id"]))
+
         db.commit()
-        flash("Задача обновлена", "success")
         return redirect(url_for("index"))
-    cur = db.execute(
-        "SELECT * FROM tasks WHERE id = ? AND user_id = ?", (task_id, g.user["id"])
-    )
-    task = cur.fetchone()
-    if not task:
-        flash("Задача не найдена", "danger")
-        return redirect(url_for("index"))
-    categories_cur = db.execute(
-        "SELECT id, name FROM categories WHERE user_id = ? ORDER BY name", (g.user["id"],)
-    )
-    categories = categories_cur.fetchall()
+
+    task = db.execute(
+        "SELECT * FROM tasks WHERE id=? AND user_id=?",
+        (task_id, g.user["id"])
+    ).fetchone()
+
+    categories = db.execute(
+        "SELECT id, name FROM categories WHERE user_id=?",
+        (g.user["id"],)
+    ).fetchall()
+
     return render_template("edit.html", task=task, categories=categories)
 
 
-@app.route("/home")
-def home_redirect():
-    if current_user():
-        return redirect(url_for("index"))
-    return redirect(url_for("login"))
-
-
-
-#
-
-
-if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5000)
+if __name__ == "__main__":
+    app.run(debug=True, host="0.0.0.0", port=5000)
