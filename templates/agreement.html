@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Пользовательское соглашение</title>
   <style>
-    /* Цветовая палитра: фон #F5F5F5 и акцент #223C32 */
     :root {
       --bg-page: #F5F5F5;
       --fg: #223C32;
@@ -14,7 +13,7 @@
       --shadow: rgba(0,0,0,0.08);
       --placeholder: #8a8a8a;
       --accent: #223C32;
-      --bg-angle: 90deg; /* направление перелива (JS может переопределить) */
+      --bg-angle: 90deg;
       --grad-from: #223C32;
       --grad-to: #1f5a4a;
     }
@@ -69,16 +68,16 @@
 
     a:hover, a:focus { text-decoration: none; }
 
-    /* Большая кнопка приема с переливом и заполнением при наведении (CSS внутри HTML) */
+
     .accept {
       text-align: center;
       margin-top: 20px;
     }
 
-    /* Базовая кнопка (расширенная) - стиль через CSS */
+
     .accept .btn {
       display: inline-block;
-      padding: 14px 26px;           /* увеличенный размер */
+      padding: 14px 26px;      
       border-radius: 6px;
       color: #fff;
       border: 0;
@@ -88,17 +87,15 @@
       font-weight: bold;
       position: relative;
       overflow: hidden;
-      /* стартовый градиентный перелив; направление управляется через CSS-переменную */
       background: linear-gradient(var(--bg-angle, 90deg), var(--grad-from), var(--grad-to));
       transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.25s ease;
       outline: none;
       user-select: none;
     }
 
-    /* Заполнение цветом при наведении (зелёный фон) */
     .accept .btn:hover,
     .accept .btn:focus {
-      background: #223C32; /* зелёный заливочный цвет */
+      background: #223C32;
       box-shadow: inset 0 0 0 1000px rgba(34,60,50,0.25);
       transform: translateY(-1px);
     }
@@ -108,7 +105,6 @@
       box-shadow: inset 0 0 0 1000px rgba(34,60,50,0.35);
     }
 
-    /* Мобильная адаптация */
     @media (max-width: 640px) {
       .container { margin: 20px; padding: 20px; }
     }
@@ -207,7 +203,7 @@
     </div>
 
     <p style="text-align: center; margin-top: 40px;">
-      Дата последнего обновления: <span class="placeholder">16.02.2026</span>
+      Дата последнего обновления: <span class="placeholder">26.04.2026</span>
     </p>
 
   </div>
