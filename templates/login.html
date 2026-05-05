@@ -1,88 +1,171 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Login — VideoHosting</title>
+  <meta charset="UTF-8" />
+  <title>Профиль - VimeoTech</title>
+  <style>
+    .video-grid { display:flex; flex-wrap:wrap; gap:16px; margin-top:16px; }
+    .video-card { width:320px; border:1px solid #e5e7eb; border-radius:8px; padding:8px; background:#fff; }
+    video { display:block; width:100%; height:180px; }
+    .meta { margin-top:8px; color:#555; font-size:13px; }
+    h2 { margin-top:0; }
+    .comment { border-top:1px solid #eee; padding:6px 0; font-size:12px; color:#333; }
+    .comment .author { font-weight:600; margin-right:6px; }
+    .comments { margin-top:10px; }
+    .btn { display:inline-block; padding:6px 12px; border-radius:6px; border:1px solid #ccc; background:#fff; text-decoration:none; color:#333; }
+  </style>
 </head>
 
-<body style="margin:0; font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; background:#F5F5F5; color:#223C35;">
+<body style="margin:0; padding:0; background:#F5F5F5; font-family:system-ui;">
 
-  <main style="
-      width: 100%;
-      max-width: 420px;
-      background: #ffffff;
-      border-radius: 20px;
-      padding: 2.25rem 2rem;
-      box-shadow: 0 8px 28px rgba(34, 60, 53, 0.25);
-      margin: 6vh auto;
-      border: 1px solid rgba(0,0,0,0.04);
-      position: relative;
-      overflow: hidden;
-  ">
-<img src="/static/logo2.png" alt="VimeoTech Logo" style="height:50px; width:auto; display:inline-block;">
-    <h1 style="margin:0 0 1.25rem; font-weight:700; font-size:1.9rem; color:#223C35;">
-      Вход
-    </h1>
+<header style="display:flex; align-items:center; justify-content:space-between; padding:14px 20px; background:#223C35; color:#fff; position:sticky; top:0;">
+  <div style="display:flex; align-items:center; gap:12px;">
+    <a href="/" style="color:#fff; text-decoration:none; display:flex; align-items:center; gap:8px;">
+      <img src="/static/logo1.png" alt="VimeoTech Logo" style="height:50px; width:auto; display:inline-block;">
 
-    <form method="post" action="" style="display:grid; gap:.85rem; margin-left:-6px;">
+    </a>
 
-      <input
-        name="username"
-        placeholder="Имя пользователя"
-        required
-        style="width:100%; padding:.85rem 1rem; border-radius:12px; border:1px solid #e0e0e0; background:#fff; font-size:1rem; color:#333; outline:none;"
-      >
+    <a href="/team" style="color:#fff; text-decoration:none; padding:6px 10px; border:1px solid rgba(255,255,255,.3); border-radius:999px;">
+      Команда
+    </a>
 
-      <input
-        name="password"
-        type="password"
-        placeholder="Пароль"
-        required
-        style="width:100%; padding:.85rem 1rem; border-radius:12px; border:1px solid #e0e0e0; background:#fff; font-size:1rem; color:#333; outline:none;"
-      >
+    <a href="/agreement" style="color:#fff; text-decoration:none; padding:6px 10px; border:1px solid rgba(255,255,255,.3); border-radius:999px;">
+      Соглашение
+    </a>
+  </div>
 
-      <button type="submit" style="
-        align-self: start;
-        padding:.86rem 1.2rem;
-        border-radius:12px;
-        border:none;
-        background:#223C35;
-        color:#fff;
-        font-weight:700;
-        cursor:pointer;
-        transition: transform .05s ease-in-out, background .2s;
-      ">
-        Войти
-      </button>
+  <div style="flex:1; display:flex; justify-content:center;">
+    <input placeholder="Поиск..."
+      style="width:60%; padding:10px 14px; border-radius:999px; border:none;">
+  </div>
 
-    </form>
+  <div>
+    <!-- Загрузка видео доступна только для зарегистрированных пользователей -->
+    {% if user %}
+      <a href="/upload"
+         class="btn"
+         style="margin-left:8px; background:#fff; color:#223C35; padding:8px 12px; border-radius:999px; text-decoration:none; font-weight:600;">
+        Загрузить видео
+      </a>
+    {% endif %}
 
-    {% with messages = get_flashed_messages(with_categories=true) %}
-      {% if messages %}
-        <div style="margin-top:15px;">
-          {% for category, message in messages %}
-            <div style="
-              padding:10px;
-              margin-bottom:8px;
-              border-radius:10px;
-              background:#ffecec;
-              color:#a33;
-              font-size:14px;
-            ">
-              {{ message }}
-            </div>
-          {% endfor %}
+    <div style="display:inline-block; position:relative;">
+      {% if user %}
+      <div style="display:inline-block; position:relative;">
+        <button id="userToggle"
+          style="background:rgba(255,255,255,.15); color:#fff; border:1px solid rgba(255,255,255,.35); padding:8px 12px; border-radius:999px; cursor:pointer;">
+          {{ user.username }}
+          <span style="margin-left:6px;">▾</span>
+        </button>
+        <div id="userDropdown" hidden
+          style="position:absolute; right:0; top:110%; background:#fff; color:#000; border-radius:8px; min-width:160px;">
+          <!-- Профиль внутри выпадающего меню -->
+          <a href="/profile" style="display:block; padding:10px; text-decoration:none; color:#333;">Профиль</a>
+
+          {% if is_owner %}
+          <a href="/profile/edit" style="display:block; padding:10px; text-decoration:none; color:#333;">Редактировать профиль</a>
+          {% endif %}
+
+          <a href="/logout" style="display:block; padding:10px; text-decoration:none; color:#333;">Выйти</a>
+
         </div>
+      </div>
+      {% else %}
+      <a href="/login" class="btn" style="background:#fff; color:#223C35; padding:8px 14px; border-radius:999px; text-decoration:none; font-weight:600;">
+        Войти
+      </a>
       {% endif %}
-    {% endwith %}
+    </div>
+  </div>
+</header>
 
-    <p style="margin-top:.9rem; font-size:.95rem; color:#6b7a77;">
-      Нет аккаунта?
-      <a href="{{ url_for('register') }}">Зарегистрироваться</a>
-    </p>
+<main style="padding:20px; max-width:1200px; margin:0 auto;">
+  <h2>Профиль: {{ user.username }}</h2>
+  <p>Здесь вы можете управлять своими загруженными видео и комментариями к ним (если вы хотите их отображать в профиле, см. ниже).</p>
 
-  </main>
+  <section id="my-videos" style="margin-top:16px;">
+    <h3>Ваши загруженные видео</h3>
+
+    {% if videos and videos|length > 0 %}
+    <div class="video-grid">
+      {% for v in videos %}
+      <div class="video-card">
+        <video controls>
+          <source src="{{ v.path }}" type="video/mp4">
+          Ваш браузер не поддерживает видео.
+        </video>
+
+        <div class="meta">
+          <strong>{{ v.title or 'Без названия' }}</strong>
+          {% if v.description %}
+          <div>{{ v.description }}</div>
+          {% endif %}
+          <div>Загружено: {{ v.uploaded_at or '' }}</div>
+          <!-- Загрузил: кликабельная ссылка на профиль автора -->
+          <div>Загрузил: <a href="/profile/{{ v.user_id }}" style="color:#333; text-decoration:none;">{{ v.uploaded_by }}</a></div>
+        </div>
+
+        <!-- Комментарии под каждым видео -->
+        <div class="comments" style="margin-top:8px;">
+          <h4 style="font-size:13px; margin:6px 0;">Комментарии</h4>
+          {% if v.comments and v.comments|length > 0 %}
+            {% for c in v.comments %}
+              <div class="comment">
+                <span class="author">{{ c.author }}</span>
+                <span style="color:#888;">{{ c.created_at }}</span>
+                <div style="margin-left:6px;">{{ c.text }}</div>
+              </div>
+            {% endfor %}
+          {% else %}
+            <div class="comment" style="color:#777;">Пока нет комментариев.</div>
+          {% endif %}
+
+          <!-- Форма добавления комментария (только для авторизованных) -->
+          {% if user %}
+          <form action="/comment" method="post" style="margin-top:6px;">
+            <input type="hidden" name="video_id" value="{{ v.id }}">
+            <textarea name="text" rows="2" placeholder="Добавить комментарий…" style="width:100%; resize:vertical;"></textarea>
+            <button type="submit" style="margin-top:4px; padding:6px 10px; border-radius:6px; border:1px solid #ccc; background:#fff;">Комментировать</button>
+          </form>
+          {% else %}
+          <div style="color:#888; font-size:12px; margin-top:6px;">Войдите, чтобы оставить комментарий.</div>
+          {% endif %}
+        </div>
+
+        <!-- Удаление видео: доступно только владельцу -->
+        {% if is_owner %}
+        <form action="/video/delete/{{ v.id }}" method="post" style="margin-top:6px;">
+          <button type="submit" style="padding:6px 10px; border-radius:6px; border:1px solid #e5e5e5; background:#fff; cursor:pointer;">
+            Удалить видео
+          </button>
+        </form>
+        {% endif %}
+
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <p>Вы ещё не загрузили видео.</p>
+    {% endif %}
+  </section>
+</main>
+
+<script>
+const btn = document.getElementById("userToggle");
+const menu = document.getElementById("userDropdown");
+
+if (btn) {
+  btn.onclick = () => {
+    menu.hidden = !menu.hidden;
+  };
+
+  document.addEventListener("click", (e) => {
+    if (!btn.contains(e.target) && !menu.contains(e.target)) {
+      menu.hidden = true;
+    }
+  });
+}
+</script>
 
 </body>
 </html>
