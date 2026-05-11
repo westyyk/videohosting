@@ -4,7 +4,11 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Пользовательское соглашение</title>
+  <link rel="icon" href="{{ url_for('static', filename='favicon.png') }}">
   <style>
+    .logo{
+            text-align: center;
+        }
     :root {
       --bg-page: #F5F5F5;
       --fg: #223C32;
@@ -112,8 +116,12 @@
 </head>
 <body>
 
-  <div class="container">
-    <img src="/static/logo2.png" alt="VimeoTech Logo" style="height:100px; width:auto; display:inline-block;">
+      <div class="logo">
+        <img src="/static/logo1.png" alt="VimeoTech Logo" style="height:400px;width:auto;">
+      </div>
+
+     <div class="container">
+
     <h1>Пользовательское соглашение</h1>
 
     <p>Настоящий документ «Пользовательское соглашение» представляет собой предложение ООО VimeoTech (далее — «Администрация») заключить договор на изложенных ниже условиях Соглашения.</p>
