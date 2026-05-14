@@ -1,72 +1,88 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <title>Импорт видео</title>
+  <meta charset="UTF-8">
+  <title>Импорт видео</title>
+  <style>
+    body { margin:0; font-family:system-ui; background:#f5f5f5; }
+    header { background:#223C35; padding:16px 20px; }
+    a { color:#fff; text-decoration:none; }
+    main {
+      max-width:700px; margin:40px auto;
+      background:#fff; padding:30px; border-radius:16px;
+    }
+    h1 { margin-top:0; }
+    form { display:flex; flex-direction:column; gap:18px; }
+    label { display:block; font-weight:600; margin-bottom:6px; }
+    input, textarea {
+      width:100%; padding:12px; border-radius:10px; border:1px solid #ccc;
+    }
+    button {
+      align-self:start; background:#223C35; color:#fff; border:none;
+      padding:12px 20px; border-radius:10px; cursor:pointer; font-size:15px;
+    }
+    .status {
+      margin-top:18px; padding:12px; border-radius:10px;
+      font-size:14px; background:#f0f0f0; border:1px solid #d0d0d0;
+    }
+    .status.pending { background:#fff3cd; border-color:#ffeaa7; }
+    .status.ready   { background:#d4edda; border-color:#c3e6cb; color:#155724; }
+    .status.error   { background:#f8d7da; border-color:#f5c6cb; color:#721c24; }
+  </style>
 </head>
 
-<body style="margin:0; font-family:system-ui; background:#f5f5f5;">
+<body>
 
-<header style="background:#223C35; padding:16px 20px;">
-    <a href="/"
-       style="color:#fff; text-decoration:none; font-size:20px; font-weight:700;">
-        ← На главную
-    </a>
+<header>
+  <a href="/" style="font-size:20px; font-weight:700;">← На главную</a>
 </header>
 
-<main style="max-width:700px; margin:40px auto; background:#fff; padding:30px; border-radius:16px;">
+<main>
 
-    <h1 style="margin-top:0;">Импорт видео</h1>
+  <h1>Импорт видео</h1>
 
-    <form method="POST">
-
-        <div style="margin-bottom:18px;">
-            <label style="display:block; margin-bottom:8px; font-weight:600;">
-                Ссылка на видео
-            </label>
-
-            <input
-                type="url"
-                name="video_url"
-                required
-                placeholder="https://youtube.com/..."
-                style="width:100%; padding:12px; border-radius:10px; border:1px solid #ccc;"
-            >
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for category, message in messages %}
+        <div class="status {{ category }}">
+          {{ message }}
         </div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
 
-        <div style="margin-bottom:18px;">
-            <label style="display:block; margin-bottom:8px; font-weight:600;">
-                Название
-            </label>
+  <form method="POST">
 
-            <input
-                type="text"
-                name="title"
-                placeholder="Название видео"
-                style="width:100%; padding:12px; border-radius:10px; border:1px solid #ccc;"
-            >
-        </div>
+    <div>
+      <label>Ссылка на видео</label>
+      <input
+        type="url"
+        name="url"
+        required
+        placeholder="https://youtube.com/… / https://vk.com/… / https://tiktok.com/… / https://rutube.ru/…"
+      >
+    </div>
 
-        <div style="margin-bottom:20px;">
-            <label style="display:block; margin-bottom:8px; font-weight:600;">
-                Описание
-            </label>
+    <div>
+      <label>Название</label>
+      <input
+        type="text"
+        name="title"
+        placeholder="Название видео"
+      >
+    </div>
 
-            <textarea
-                name="description"
-                rows="5"
-                placeholder="Описание видео"
-                style="width:100%; padding:12px; border-radius:10px; border:1px solid #ccc; resize:vertical;"
-            ></textarea>
-        </div>
+    <div>
+      <label>Описание</label>
+      <textarea
+        name="description"
+        rows="4"
+        placeholder="Описание видео"
+      ></textarea>
+    </div>
 
-        <button
-            type="submit"
-            style="background:#223C35; color:#fff; border:none; padding:12px 20px; border-radius:10px; cursor:pointer; font-size:15px;">
-            Импортировать
-        </button>
-
-    </form>
+    <button type="submit">Импортировать</button>
+  </form>
 
 </main>
 
