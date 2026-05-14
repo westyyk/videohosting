@@ -2,160 +2,495 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
-  <title> Главная </title>
+  <title>Главная</title>
+
   <link rel="icon" href="{{ url_for('static', filename='favicon.png') }}">
+
   <style>
-    .video-grid { display:flex; flex-wrap:wrap; gap:16px; }
-    .video-card { width:320px; border:1px solid #e5e7eb; border-radius:8px; padding:8px; background:#fff; }
-    video { display:block; width:100%; height:180px; }
-    .meta { margin-top:8px; color:#555; font-size:13px; }
-    .comments { margin-top:10px; }
-    .comment { border-top:1px solid #eee; padding:6px 0; font-size:12px; color:#333; }
-    .comment .author { font-weight:600; margin-right:6px; }
-    h2 { margin-top:0; }
+
+    body{
+      margin:0;
+      padding:0;
+      background:#F5F5F5;
+      font-family:system-ui;
+    }
+
+    .video-grid{
+      display:flex;
+      flex-wrap:wrap;
+      gap:16px;
+    }
+
+    .video-card{
+      width:320px;
+      border:1px solid #e5e7eb;
+      border-radius:12px;
+      padding:10px;
+      background:#fff;
+      box-shadow:0 2px 10px rgba(0,0,0,.05);
+    }
+
+    .meta{
+      margin-top:8px;
+      color:#555;
+      font-size:13px;
+    }
+
+    .comments{
+      margin-top:10px;
+    }
+
+    .comment{
+      border-top:1px solid #eee;
+      padding:6px 0;
+      font-size:12px;
+      color:#333;
+    }
+
+    .comment .author{
+      font-weight:600;
+      margin-right:6px;
+    }
+
+    h2{
+      margin-top:0;
+    }
+
+    video{
+      width:100%;
+      height:180px;
+      background:#000;
+      border-radius:8px;
+      display:block;
+      object-fit:cover;
+    }
+
+    textarea{
+      width:100%;
+      resize:vertical;
+    }
+
   </style>
 </head>
 
-<body style="margin:0; padding:0; background:#F5F5F5; font-family:system-ui;">
+<body>
 
-<header style="display:flex; align-items:center; justify-content:space-between; padding:14px 20px; background:#223C35; color:#fff; position:sticky; top:0;">
+<header style="
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:14px 20px;
+  background:#223C35;
+  color:#fff;
+  position:sticky;
+  top:0;
+">
+
   <div style="display:flex; align-items:center; gap:12px;">
-    <a href="/" style="color:#fff; text-decoration:none; display:flex; align-items:center; gap:8px;">
-      <img src="/static/logo1.png" alt="VimeoTech Logo" style="height:50px; width:auto; display:inline-block;">
+
+    <a href="/" style="
+      color:#fff;
+      text-decoration:none;
+      display:flex;
+      align-items:center;
+      gap:8px;
+    ">
+
+      <img
+        src="/static/logo1.png"
+        alt="Logo"
+        style="height:50px;"
+      >
 
     </a>
 
-    <a href="/team" style="color:#fff; text-decoration:none; padding:6px 10px; border:1px solid rgba(255,255,255,.3); border-radius:999px;">
+    <a href="/team" style="
+      color:#fff;
+      text-decoration:none;
+      padding:6px 10px;
+      border:1px solid rgba(255,255,255,.3);
+      border-radius:999px;
+    ">
       Команда
     </a>
 
-    <a href="/agreement" style="color:#fff; text-decoration:none; padding:6px 10px; border:1px solid rgba(255,255,255,.3); border-radius:999px;">
+    <a href="/agreement" style="
+      color:#fff;
+      text-decoration:none;
+      padding:6px 10px;
+      border:1px solid rgba(255,255,255,.3);
+      border-radius:999px;
+    ">
       Соглашение
     </a>
 
   </div>
 
   <div style="flex:1; display:flex; justify-content:center;">
-    <input placeholder="Поиск..."
-      style="width:60%; padding:10px 14px; border-radius:999px; border:none;">
+
+    <input
+      placeholder="Поиск..."
+      style="
+        width:60%;
+        padding:10px 14px;
+        border-radius:999px;
+        border:none;
+      "
+    >
+
   </div>
 
   <div>
-    <!-- Загрузка видео доступна только для зарегистрированных пользователей -->
+
     {% if user %}
+
       <a href="/upload"
-         style="display:inline-block; margin-left:8px; background:#fff; color:#223C35; padding:8px 12px; border-radius:999px; text-decoration:none; font-weight:600;">
+         style="
+          display:inline-block;
+          margin-left:8px;
+          background:#fff;
+          color:#223C35;
+          padding:8px 12px;
+          border-radius:999px;
+          text-decoration:none;
+          font-weight:600;
+         ">
         Загрузить видео
       </a>
-    {% endif %}
 
-    <a href="/import"
-   style="display:inline-block; margin-left:8px; background:#4f46e5; color:#fff; padding:8px 12px; border-radius:999px; text-decoration:none; font-weight:600;">
-  Импорт видео
-</a>
+      <a href="/import"
+         style="
+          display:inline-block;
+          margin-left:8px;
+          background:#4f46e5;
+          color:#fff;
+          padding:8px 12px;
+          border-radius:999px;
+          text-decoration:none;
+          font-weight:600;
+         ">
+        Импорт видео
+      </a>
 
-    {% if user %}
       <div style="position:relative; display:inline-block;">
+
         <button id="userToggle"
-          style="background:rgba(255,255,255,.15); color:#fff; border:1px solid rgba(255,255,255,.35); padding:8px 12px; border-radius:999px; cursor:pointer;">
+          style="
+            background:rgba(255,255,255,.15);
+            color:#fff;
+            border:1px solid rgba(255,255,255,.35);
+            padding:8px 12px;
+            border-radius:999px;
+            cursor:pointer;
+          ">
+
           {{ user.username }}
+
           <span style="margin-left:6px;">▾</span>
+
         </button>
-        <div id="userDropdown" hidden
-          style="position:absolute; right:0; top:110%; background:#fff; color:#000; border-radius:8px; min-width:160px;">
-          <a href="/profile" style="display:block; padding:10px; text-decoration:none; color:#333;">Профиль</a>
-          <a href="/logout" style="display:block; padding:10px; text-decoration:none; color:#333;">Выйти</a>
+
+        <div id="userDropdown"
+             hidden
+             style="
+              position:absolute;
+              right:0;
+              top:110%;
+              background:#fff;
+              color:#000;
+              border-radius:8px;
+              min-width:160px;
+              box-shadow:0 5px 15px rgba(0,0,0,.15);
+             ">
+
+          <a href="/profile"
+             style="
+              display:block;
+              padding:10px;
+              text-decoration:none;
+              color:#333;
+             ">
+            Профиль
+          </a>
+
+          <a href="/logout"
+             style="
+              display:block;
+              padding:10px;
+              text-decoration:none;
+              color:#333;
+             ">
+            Выйти
+          </a>
+
         </div>
+
       </div>
+
     {% else %}
-      <a href="/login" style="background:#fff; color:#223C35; padding:8px 14px; border-radius:999px; text-decoration:none; font-weight:600;">
+
+      <a href="/login"
+         style="
+          background:#fff;
+          color:#223C35;
+          padding:8px 14px;
+          border-radius:999px;
+          text-decoration:none;
+          font-weight:600;
+         ">
         Войти
       </a>
+
     {% endif %}
+
   </div>
+
 </header>
 
-<main style="padding:20px; max-width:1200px; margin:0 auto;">
+<main style="
+  padding:20px;
+  max-width:1200px;
+  margin:0 auto;
+">
+
   <h2>Главная</h2>
 
-  <!-- Загруженные видео (для гостей видны все видео) -->
-  {% if videos and videos|length > 0 %}
-  <section id="videos" style="margin-top:20px;">
-    <h3>Загруженные видео</h3>
-    <div class="video-grid">
-      {% for v in videos %}
-      <div class="video-card">
-        <video width="100%" height="180" controls style="display:block;">
-          <source src="{{ v.path }}" type="video/mp4">
-          Ваш браузер не поддерживает видео.
-        </video>
-        <div style="margin-top:8px;">
-          <strong>{{ v.title or 'Без названия' }}</strong>
-          {% if v.description %}
-            <p style="margin:4px 0 0 0; color:#555; font-size:13px;">{{ v.description }}</p>
-          {% endif %}
-          <p style="margin:4px 0 0 0; font-size:12px; color:#888;">
-            Загружено пользователем:
-            <!-- кликабельная никнейм-строка -->
-            <a href="/profile/{{ v.user_id }}" style="color:#333; text-decoration:none;">
-              {{ v.uploaded_by }}
-            </a>
-            {% if v.uploaded_at %}
-              <span style="margin-left:8px; color:#666;">• {{ v.uploaded_at }}</span>
-            {% endif %}
-          </p>
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+
+      {% for category, message in messages %}
+
+        <div style="
+          margin-bottom:12px;
+          padding:12px;
+          border-radius:10px;
+          background:#fff;
+          border:1px solid #ddd;
+        ">
+          {{ message }}
         </div>
 
-        <!-- Комментарии к видео -->
-        <div class="comments" style="margin-top:10px;">
-          <h4 style="font-size:13px; margin:6px 0;">Комментарии</h4>
+      {% endfor %}
+
+    {% endif %}
+  {% endwith %}
+
+  {% if videos and videos|length > 0 %}
+
+  <section id="videos" style="margin-top:20px;">
+
+    <h3>Загруженные видео</h3>
+
+    <div class="video-grid">
+
+      {% for v in videos %}
+
+      <div class="video-card">
+
+        <!-- ВАЖНО: ИСПРАВЛЕННЫЙ VIDEO -->
+
+        <video
+          controls
+          preload="metadata"
+          playsinline
+        >
+
+          <source src="{{ v.path }}">
+
+          Ваш браузер не поддерживает видео.
+
+        </video>
+
+        <div style="margin-top:8px;">
+
+          <strong>
+            {{ v.title or 'Без названия' }}
+          </strong>
+
+          {% if v.description %}
+
+            <p style="
+              margin:4px 0 0 0;
+              color:#555;
+              font-size:13px;
+              white-space:pre-line;
+            ">
+              {{ v.description }}
+            </p>
+
+          {% endif %}
+
+          <p style="
+            margin:4px 0 0 0;
+            font-size:12px;
+            color:#888;
+          ">
+
+            Загружено пользователем:
+
+            <a href="/profile/{{ v.user_id }}"
+               style="
+                color:#333;
+                text-decoration:none;
+               ">
+              {{ v.uploaded_by }}
+            </a>
+
+            {% if v.uploaded_at %}
+
+              <span style="
+                margin-left:8px;
+                color:#666;
+              ">
+                • {{ v.uploaded_at }}
+              </span>
+
+            {% endif %}
+
+          </p>
+
+        </div>
+
+        <!-- COMMENTS -->
+
+        <div class="comments">
+
+          <h4 style="
+            font-size:13px;
+            margin:6px 0;
+          ">
+            Комментарии
+          </h4>
+
           {% if v.comments and v.comments|length > 0 %}
+
             {% for c in v.comments %}
+
               <div class="comment">
-                <span class="author">{{ c.author }}</span>
-                <span style="color:#888; font-size:12px;">{{ c.created_at }}</span>
-                <div style="margin-left:6px;">{{ c.text }}</div>
+
+                <span class="author">
+                  {{ c.author }}
+                </span>
+
+                <span style="
+                  color:#888;
+                  font-size:12px;
+                ">
+                  {{ c.created_at }}
+                </span>
+
+                <div style="margin-left:6px;">
+                  {{ c.text }}
+                </div>
+
               </div>
+
             {% endfor %}
+
           {% else %}
-            <div class="comment" style="color:#777;">Пока нет комментариев.</div>
+
+            <div class="comment" style="color:#777;">
+              Пока нет комментариев.
+            </div>
+
           {% endif %}
 
           {% if user %}
-          <form action="/comment" method="post" style="margin-top:6px;">
-            <input type="hidden" name="video_id" value="{{ v.id }}">
-            <textarea name="text" rows="2" placeholder="Добавить комментарий…" style="width:100%; resize:vertical;"></textarea>
-            <button type="submit" style="margin-top:6px; padding:6px 10px; border-radius:6px; border:1px solid #ccc; background:#fff;">Комментировать</button>
+
+          <form action="/comment"
+                method="post"
+                style="margin-top:6px;">
+
+            <input
+              type="hidden"
+              name="video_id"
+              value="{{ v.id }}"
+            >
+
+            <textarea
+              name="text"
+              rows="2"
+              placeholder="Добавить комментарий…"
+            ></textarea>
+
+            <button
+              type="submit"
+              style="
+                margin-top:6px;
+                padding:6px 10px;
+                border-radius:6px;
+                border:1px solid #ccc;
+                background:#fff;
+                cursor:pointer;
+              ">
+              Комментировать
+            </button>
+
           </form>
+
           {% else %}
-          <div style="color:#888; font-size:12px; margin-top:6px;">Войдите, чтобы оставить комментарий.</div>
+
+          <div style="
+            color:#888;
+            font-size:12px;
+            margin-top:6px;
+          ">
+            Войдите, чтобы оставить комментарий.
+          </div>
+
           {% endif %}
+
         </div>
 
       </div>
+
       {% endfor %}
+
     </div>
+
   </section>
+
   {% else %}
-  <p style="margin-top:16px; color:#555;">Видео ещё не загружены.</p>
+
+    <p style="
+      margin-top:16px;
+      color:#555;
+    ">
+      Видео ещё не загружены.
+    </p>
+
   {% endif %}
+
 </main>
 
 <script>
+
 const btn = document.getElementById("userToggle");
+
 const menu = document.getElementById("userDropdown");
 
 if (btn) {
+
   btn.onclick = () => {
+
     menu.hidden = !menu.hidden;
+
   };
 
   document.addEventListener("click", (e) => {
-    if (!btn.contains(e.target) && !menu.contains(e.target)) {
+
+    if (
+      !btn.contains(e.target)
+      &&
+      !menu.contains(e.target)
+    ) {
       menu.hidden = true;
     }
+
   });
+
 }
+
 </script>
 
 </body>
